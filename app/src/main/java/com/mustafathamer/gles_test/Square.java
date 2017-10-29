@@ -8,14 +8,13 @@ import java.nio.ShortBuffer;
 /**
  * Created by moose-home on 10/26/2017.
  *
- * Again, you should define the vertices in a counterclockwise order for both triangles that represent this shape,
+ * Define the vertices in a counterclockwise order for both triangles that represent this shape,
  * and put the values in a ByteBuffer. In order to avoid defining the two coordinates shared by each triangle twice,
  * use a drawing list to tell the OpenGL ES graphics pipeline how to draw these vertices.
  */
 
 public class Square
 {
-
     private FloatBuffer vertexBuffer;
     private ShortBuffer drawListBuffer;
 

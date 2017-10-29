@@ -8,10 +8,10 @@ import java.nio.FloatBuffer;
 
 /**
  * Created by moose-home on 10/26/2017.
- *
+ * <p>
  * By default, OpenGL ES assumes a coordinate system where [0,0,0] (X,Y,Z) specifies the center of the GLSurfaceView frame,
  * [1,1,0] is the top right corner of the frame and [-1,-1,0] is bottom left corner of the frame.
- *
+ * <p>
  * Note that the coordinates of this shape are defined in a counterclockwise order.
  * The drawing order is important because it defines which side is the front face of the shape, which you typically
  * want to have drawn, and the back face, which you can choose to not draw using the OpenGL ES cull face feature.
@@ -82,7 +82,8 @@ public class Triangle
     //
     //
     //
-    public void draw() {
+    public void draw(float[] mvpMatrix)
+    { // pass in the calculated transformation matrix
         // Add program to OpenGL ES environment
         GLES20.glUseProgram(mProgram);
 
@@ -102,6 +103,12 @@ public class Triangle
 
         // Set color for drawing the triangle
         GLES20.glUniform4fv(mColorHandle, 1, color, 0);
+
+        // get handle to shape's transformation matrix
+        int mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
+
+        // Pass the projection and view transformation to the shader
+        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
 
         // Draw the triangle
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount);

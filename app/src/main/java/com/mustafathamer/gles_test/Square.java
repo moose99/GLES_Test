@@ -9,7 +9,7 @@ import java.nio.ShortBuffer;
 
 /**
  * Created by moose-home on 10/26/2017.
- *
+ * <p>
  * Define the vertices in a counterclockwise order for both triangles that represent this shape,
  * and put the values in a ByteBuffer. In order to avoid defining the two coordinates shared by each triangle twice,
  * use a drawing list to tell the OpenGL ES graphics pipeline how to draw these vertices.
@@ -84,7 +84,8 @@ public class Square
         GLES20.glLinkProgram(mProgram);
     }
 
-    public void draw() {
+    public void draw(float[] mvpMatrix)
+    { // pass in the calculated transformation matrix
         // Add program to OpenGL ES environment
         GLES20.glUseProgram(mProgram);
 
@@ -104,6 +105,12 @@ public class Square
 
         // Set color for drawing the triangle
         GLES20.glUniform4fv(mColorHandle, 1, color, 0);
+
+        // get handle to shape's transformation matrix
+        int mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
+
+        // Pass the projection and view transformation to the shader
+        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
 
         // Draw the square using the draw list buffer
         GLES20.glDrawElements(

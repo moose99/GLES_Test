@@ -19,20 +19,6 @@ import java.nio.FloatBuffer;
 
 public class Triangle
 {
-    // basic shaders
-    private final String vertexShaderCode =
-            "attribute vec4 vPosition;" +
-                    "void main() {" +
-                    "  gl_Position = vPosition;" +
-                    "}";
-
-    private final String fragmentShaderCode =
-            "precision mediump float;" +
-                    "uniform vec4 vColor;" +
-                    "void main() {" +
-                    "  gl_FragColor = vColor;" +
-                    "}";
-
     private final int mProgram;
 
     private FloatBuffer vertexBuffer;
@@ -77,8 +63,8 @@ public class Triangle
         // set the buffer to read the first coordinate
         vertexBuffer.position(0);
 
-        int vertexShader = MyGLRenderer.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
-        int fragmentShader = MyGLRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
+        int vertexShader = MyGLRenderer.loadShader(GLES20.GL_VERTEX_SHADER, MyGLRenderer.vertexShaderCode);
+        int fragmentShader = MyGLRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER, MyGLRenderer.fragmentShaderCode);
 
         // create empty OpenGL ES Program
         mProgram = GLES20.glCreateProgram();
@@ -93,6 +79,9 @@ public class Triangle
         GLES20.glLinkProgram(mProgram);
     }
 
+    //
+    //
+    //
     public void draw() {
         // Add program to OpenGL ES environment
         GLES20.glUseProgram(mProgram);

@@ -17,6 +17,21 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
     private Triangle mTriangle;
     private Square   mSquare;
 
+    // basic shaders
+    public static final String vertexShaderCode =
+            "attribute vec4 vPosition;" +
+                    "void main() {" +
+                    "  gl_Position = vPosition;" +
+                    "}";
+
+    public static final String fragmentShaderCode =
+            "precision mediump float;" +
+                    "uniform vec4 vColor;" +
+                    "void main() {" +
+                    "  gl_FragColor = vColor;" +
+                    "}";
+
+
     //
     // utility func for loading shader code from string buffer
     //
@@ -53,7 +68,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         // Redraw background color
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
-        mTriangle.draw();
+        //mTriangle.draw();
+        mSquare.draw();
     }
 
     @Override

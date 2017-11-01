@@ -47,6 +47,14 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
     private final float[] mViewMatrix = new float[16];
 
     //
+    // Since the renderer code is running on a separate thread from the main user interface thread
+    // of your application, you must declare this public variable as volatile.
+    //Instead of synchronized variable in Java, you can have java volatile variable, which will instruct
+    // JVM threads to read value of volatile variable from main memory and don't cache it locally.
+    //
+    private volatile float mAngle;
+
+    //
     // utility func for loading shader code from string buffer
     //
     public static int loadShader(int type, String shaderCode)
@@ -60,6 +68,16 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         GLES20.glCompileShader(shader);
 
         return shader;
+    }
+
+    public float getAngle()
+    {
+        return mAngle;
+    }
+
+    public void setAngle(float angle)
+    {
+        mAngle = angle;
     }
 
     @Override
@@ -94,9 +112,9 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         float[] mRotationMatrix = new float[16];
 
         // Create a rotation transformation for the triangle
-        long time = SystemClock.uptimeMillis() % 4000L;
-        float angle = 0.090f * ((int) time);
-        Matrix.setRotateM(mRotationMatrix, 0, angle, 0, 0, -1.0f);
+ //       long time = SystemClock.uptimeMillis() % 4000L;
+ //       float angle = 0.090f * ((int) time);
+        Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, -1.0f);
 
         // Combine the rotation matrix with the projection and camera view
         // Note that the mMVPMatrix factor *must be first* in order

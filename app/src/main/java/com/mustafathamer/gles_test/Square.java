@@ -8,8 +8,6 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
 /**
- * Created by moose-home on 10/26/2017.
- * <p>
  * Define the vertices in a counterclockwise order for both triangles that represent this shape,
  * and put the values in a ByteBuffer. In order to avoid defining the two coordinates shared by each triangle twice,
  * use a drawing list to tell the OpenGL ES graphics pipeline how to draw these vertices.

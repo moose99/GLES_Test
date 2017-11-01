@@ -1,0 +1,18 @@
+MANIFEST
+-add gles version and texture formats support
+
+ACTIVITY
+-set the content view to our surfaceview
+
+RENDERER
+-has basic shader code
+-has mvp matrices, sets projection matrix when surface changes
+-draw objects using matrix
+
+SURFACE VIEW
+-sets the renderer
+
+OBJECT
+-creates vertices and triangle list
+-creates shaders and program
+-draws object

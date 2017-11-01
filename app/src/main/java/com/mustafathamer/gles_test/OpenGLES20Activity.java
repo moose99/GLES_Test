@@ -9,7 +9,6 @@ import android.os.Bundle;
 
 public class OpenGLES20Activity extends MainActivity
 {
-
     private GLSurfaceView mGLView;
 
     @Override

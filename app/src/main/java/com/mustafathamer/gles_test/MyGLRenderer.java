@@ -6,6 +6,7 @@ import android.opengl.GLES20;
 //import android.opengl.GLES10;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.os.SystemClock;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -16,18 +17,18 @@ import javax.microedition.khronos.opengles.GL10;
 public class MyGLRenderer implements GLSurfaceView.Renderer
 {
     private Triangle mTriangle;
-    private Square   mSquare;
+    private Square mSquare;
 
     // basic shaders
     public static final String vertexShaderCode =
-        // This matrix member variable provides a hook to manipulate
-        // the coordinates of the objects that use this vertex shader
+            // This matrix member variable provides a hook to manipulate
+            // the coordinates of the objects that use this vertex shader
             "uniform mat4 uMVPMatrix;" +
                     "attribute vec4 vPosition;" +
                     "void main() {" +
-        // the matrix must be included as a modifier of gl_Position
-        // Note that the uMVPMatrix factor *must be first* in order
-        // for the matrix multiplication product to be correct.
+                    // the matrix must be included as a modifier of gl_Position
+                    // Note that the uMVPMatrix factor *must be first* in order
+                    // for the matrix multiplication product to be correct.
                     "  gl_Position = uMVPMatrix  * vPosition;" +
                     "}";
 
@@ -38,7 +39,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
                     "  gl_FragColor = vColor;" +
                     "}";
 
-
     //
     // for projection
     //
@@ -46,12 +46,11 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
     private final float[] mProjectionMatrix = new float[16];
     private final float[] mViewMatrix = new float[16];
 
-
     //
     // utility func for loading shader code from string buffer
     //
-    public static int loadShader(int type, String shaderCode){
-
+    public static int loadShader(int type, String shaderCode)
+    {
         // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
         // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
         int shader = GLES20.glCreateShader(type);
@@ -66,6 +65,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config)
     {
+        System.out.println("Renderer: OnSurfaceCreated");
         // Set the background frame color to RED
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -89,13 +89,29 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
-        mTriangle.draw(mMVPMatrix);
-        //mSquare.draw(mMVPMatrix);
+
+        float[] scratch = new float[16];
+        float[] mRotationMatrix = new float[16];
+
+        // Create a rotation transformation for the triangle
+        long time = SystemClock.uptimeMillis() % 4000L;
+        float angle = 0.090f * ((int) time);
+        Matrix.setRotateM(mRotationMatrix, 0, angle, 0, 0, -1.0f);
+
+        // Combine the rotation matrix with the projection and camera view
+        // Note that the mMVPMatrix factor *must be first* in order
+        // for the matrix multiplication product to be correct.
+        Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
+
+        mTriangle.draw(scratch);
+        //mSquare.draw(scratch);
     }
 
     @Override
     public void onSurfaceChanged(GL10 unused, int width, int height)
     {
+        System.out.println("Renderer: OnSurfaceChanged");
+
         GLES20.glViewport(0, 0, width, height);
 
         float ratio = (float) width / height;

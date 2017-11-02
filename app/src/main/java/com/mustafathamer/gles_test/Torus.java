@@ -48,9 +48,9 @@ public class Torus
         facesList = new ArrayList<>();
 
         // Open the OBJ file with a Scanner
-        Scanner scanner = new Scanner(context.getAssets().open("torus.obj"));
+        Scanner scanner = new Scanner(context.getAssets().open("model.obj"));
 
-        System.out.println("scanning torus");
+        System.out.println("scanning model");
         // Loop through all its lines
         while (scanner.hasNextLine())
         {
@@ -68,6 +68,9 @@ public class Torus
 
         // Close the scanner
         scanner.close();
+
+        System.out.println("Found vertices:" + verticesList.size());
+        System.out.println("Found faces:" + facesList.size());
 
         // Create buffer for vertices
         ByteBuffer buffer1 = ByteBuffer.allocateDirect(verticesList.size() * 3 * 4 /* sizeof float */);
@@ -99,9 +102,22 @@ public class Torus
         //
         for (String face : facesList)
         {
+            String tmp[];
             String vertexIndices[] = face.split(" ");
+
+            tmp = vertexIndices[1].split("//");
+            vertexIndices[1] = tmp[0];
+
             short vertex1 = Short.parseShort(vertexIndices[1]);     // convert each index to a short
+
+            tmp = vertexIndices[2].split("//");
+            vertexIndices[2] = tmp[0];
+
             short vertex2 = Short.parseShort(vertexIndices[2]);
+
+            tmp = vertexIndices[3].split("//");
+            vertexIndices[3] = tmp[0];
+
             short vertex3 = Short.parseShort(vertexIndices[3]);
             facesBuffer.put((short) (vertex1 - 1));                 // indices start from 1, not 0
             facesBuffer.put((short) (vertex2 - 1));

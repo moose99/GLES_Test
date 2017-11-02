@@ -2,11 +2,14 @@ package com.mustafathamer.gles_test;
 
 import javax.microedition.khronos.egl.EGLConfig;
 //import android.opengl.EGLConfig;
+import android.content.Context;
 import android.opengl.GLES20;
 //import android.opengl.GLES10;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.SystemClock;
+
+import java.io.IOException;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -16,8 +19,10 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class MyGLRenderer implements GLSurfaceView.Renderer
 {
+    private Context mContext;
     private Triangle mTriangle;
     private Square mSquare;
+    private Torus mTorus;
 
     // basic shaders
     public static final String vertexShaderCode =
@@ -54,6 +59,11 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
     //
     private volatile float mAngle;
 
+    public void SetContext(Context context)
+    {
+        mContext = context;
+    }
+
     //
     // utility func for loading shader code from string buffer
     //
@@ -89,10 +99,17 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
 
         // Create the shapes I want to draw
 
-        // initialize a triangle
+        // initialize shapes
         mTriangle = new Triangle();
-        // initialize a square
         mSquare = new Square();
+        try
+        {
+            mTorus = new Torus(mContext);
+        } catch (IOException e)
+        {
+            System.out.println("Torus ctor exception");
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -102,7 +119,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         // Set the camera position (View matrix)
-        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 8, -8, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
 
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
@@ -121,8 +138,9 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         // for the matrix multiplication product to be correct.
         Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
 
-        mTriangle.draw(scratch);
+        //mTriangle.draw(scratch);
         //mSquare.draw(scratch);
+        mTorus.draw(scratch);
     }
 
     @Override
@@ -136,6 +154,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
 
         // this projection matrix is applied to object coordinates
         // in the onDrawFrame() method
-        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 20);
     }
 }

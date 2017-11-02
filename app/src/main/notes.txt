@@ -9,7 +9,8 @@ RENDERER
 -has mvp matrices, sets projection matrix when surface changes
 -draw objects using matrix
 
-SURFACE VIEW
+SURFACE VIEW (the canvas)
+-sets gl version for the context
 -sets the renderer
 -adds touch handler
 

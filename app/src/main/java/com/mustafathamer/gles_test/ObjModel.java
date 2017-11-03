@@ -23,12 +23,15 @@ import java.util.Scanner;
 public class ObjModel
 {
     private List<String> verticesList;
+    private List<String> normalsList;
     private List<String> facesList;
 
     private FloatBuffer verticesBuffer;
+    private FloatBuffer normalsBuffer;
     private ShortBuffer facesBuffer;
+    private ShortBuffer faceNormalsIndicesBuffer;
 
-    private final int mProgram;
+    private int mProgram;
     static final int COORDS_PER_VERTEX = 3;
 
     // Set color with red, green, blue and alpha (opacity) values
@@ -42,10 +45,22 @@ public class ObjModel
 
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
 
-    public ObjModel(Context context) throws IOException
+    public ObjModel(Context context)
+    {
+        try
+        {
+            LoadObjFile(context);
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private void LoadObjFile(Context context) throws IOException
     {
         verticesList = new ArrayList<>();
         facesList = new ArrayList<>();
+        normalsList = new ArrayList<>();
 
         // Open the OBJ file with a Scanner
         Scanner scanner = new Scanner(context.getAssets().open("model.obj"));
@@ -59,10 +74,16 @@ public class ObjModel
             {
                 // Add vertex line to list of vertices
                 verticesList.add(line);
-            } else if (line.startsWith("f "))
+            }
+            else if (line.startsWith("f "))
             {
                 // Add face line to faces list
                 facesList.add(line);
+            }
+            else if (line.startsWith("vn "))
+            {
+                // Add face line to faces list
+                normalsList.add(line);
             }
         }
 
@@ -71,6 +92,7 @@ public class ObjModel
 
         System.out.println("Found vertices:" + verticesList.size());
         System.out.println("Found faces:" + facesList.size());
+        System.out.println("Found normals:" + normalsList.size());
 
         // Create buffer for vertices
         ByteBuffer buffer1 = ByteBuffer.allocateDirect(verticesList.size() * 3 * 4 /* sizeof float */);
@@ -82,7 +104,18 @@ public class ObjModel
         buffer2.order(ByteOrder.nativeOrder());
         facesBuffer = buffer2.asShortBuffer();
 
-        // Populating the vertices buffer involves looping through the contents of verticesList,
+        // Create buffer for normals
+        ByteBuffer buffer3 = ByteBuffer.allocateDirect(normalsList.size() * 3 * 4 /* sizeof float */);
+        buffer3.order(ByteOrder.nativeOrder());
+        normalsBuffer = buffer3.asFloatBuffer();
+
+        // Create buffer for faceNormalIndices
+        ByteBuffer buffer4 = ByteBuffer.allocateDirect(facesList.size() * 3 * 2 /* sizeof short */);
+        buffer4.order(ByteOrder.nativeOrder());
+        faceNormalsIndicesBuffer = buffer4.asShortBuffer();
+
+
+        // Populating the Vertices buffer involves looping through the contents of verticesList,
         // extracting the X, Y, and Z coordinates from each item, and calling the put() method to
         // put data inside the buffer.
         for (String vertex : verticesList)
@@ -97,6 +130,21 @@ public class ObjModel
         }
         verticesBuffer.position(0);     // reset the position of the buffer
 
+        // Populating the Normals buffer involves looping through the contents of normalsList,
+        // extracting the X, Y, and Z coordinates from each item, and calling the put() method to
+        // put data inside the buffer.
+        for (String normal : normalsList)
+        {
+            String coords[] = normal.split(" "); // Split by space
+            float x = Float.parseFloat(coords[1]);      // string to float
+            float y = Float.parseFloat(coords[2]);
+            float z = Float.parseFloat(coords[3]);
+            normalsBuffer.put(x);
+            normalsBuffer.put(y);
+            normalsBuffer.put(z);
+        }
+        normalsBuffer.position(0);     // reset the position of the buffer
+
         //
         // populate faces buffer
         //
@@ -106,24 +154,27 @@ public class ObjModel
             String vertexIndices[] = face.split(" ");
 
             tmp = vertexIndices[1].split("//");
-            vertexIndices[1] = tmp[0];
-
-            short vertex1 = Short.parseShort(vertexIndices[1]);     // convert each index to a short
+            short vertex1 = Short.parseShort(tmp[0]);     // convert each index to a short
+            short normal1 = tmp.length>1 ? Short.parseShort(tmp[1]) : -1;
 
             tmp = vertexIndices[2].split("//");
-            vertexIndices[2] = tmp[0];
-
-            short vertex2 = Short.parseShort(vertexIndices[2]);
+            short vertex2 = Short.parseShort(tmp[0]);
+            short normal2 = tmp.length>1 ? Short.parseShort(tmp[1]) : -1;
 
             tmp = vertexIndices[3].split("//");
-            vertexIndices[3] = tmp[0];
+            short vertex3 = Short.parseShort(tmp[0]);
+            short normal3 = tmp.length>1 ? Short.parseShort(tmp[1]) : -1;
 
-            short vertex3 = Short.parseShort(vertexIndices[3]);
             facesBuffer.put((short) (vertex1 - 1));                 // indices start from 1, not 0
             facesBuffer.put((short) (vertex2 - 1));
             facesBuffer.put((short) (vertex3 - 1));
+
+            faceNormalsIndicesBuffer.put((short) (normal1 - 1));
+            faceNormalsIndicesBuffer.put((short) (normal2 - 1));
+            faceNormalsIndicesBuffer.put((short) (normal3 - 1));
         }
         facesBuffer.position(0);
+        faceNormalsIndicesBuffer.position(0);
 
         // create empty OpenGL ES Program
         mProgram = GLES20.glCreateProgram();

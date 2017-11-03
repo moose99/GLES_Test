@@ -113,14 +113,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         // initialize shapes
         mTriangle = new Triangle();
         mSquare = new Square();
-        try
-        {
-            mObjModel = new ObjModel(mContext);
-        } catch (IOException e)
-        {
-            System.out.println("ObjModel ctor exception");
-            e.printStackTrace();
-        }
+        mObjModel = new ObjModel(mContext);
     }
 
     @Override

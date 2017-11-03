@@ -7,9 +7,9 @@ import android.opengl.GLES20;
 //import android.opengl.GLES10;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.os.SystemClock;
 
 import java.io.IOException;
+import java.util.Scanner;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -22,27 +22,9 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
     private Context mContext;
     private Triangle mTriangle;
     private Square mSquare;
-    private Torus mTorus;
-
-    // basic shaders
-    public static final String vertexShaderCode =
-            // This matrix member variable provides a hook to manipulate
-            // the coordinates of the objects that use this vertex shader
-            "uniform mat4 uMVPMatrix;" +
-                    "attribute vec4 vPosition;" +
-                    "void main() {" +
-                    // the matrix must be included as a modifier of gl_Position
-                    // Note that the uMVPMatrix factor *must be first* in order
-                    // for the matrix multiplication product to be correct.
-                    "  gl_Position = uMVPMatrix  * vPosition;" +
-                    "}";
-
-    public static final String fragmentShaderCode =
-            "precision mediump float;" +
-                    "uniform vec4 vColor;" +
-                    "void main() {" +
-                    "  gl_FragColor = vColor;" +
-                    "}";
+    private ObjModel mObjModel;
+    public static int VertexShaderID = -1;
+    public static int FragmentShaderID = -1;
 
     //
     // for projection
@@ -59,15 +41,46 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
     //
     private volatile float mAngle;
 
-    public void SetContext(Context context)
+    public MyGLRenderer()
     {
-        mContext = context;
+
+    }
+
+    public void SetContext(Context context) { mContext = context; }
+
+    public float GetAngle() { return mAngle; }
+    public void SetAngle(float angle) { mAngle = angle; }
+
+    private String LoadShaderCode(String fileName)
+    {
+        Scanner scanner = null;
+        try
+        {
+            scanner = new Scanner(mContext.getAssets().open(fileName));
+        } catch (IOException e)
+        {
+            System.out.println("Exception opening assets file:" + fileName);
+            e.printStackTrace();
+        }
+
+        String shaderCode="";
+        // Loop through all its lines
+        while (scanner.hasNextLine())
+        {
+            String line = scanner.nextLine();
+            if (line.startsWith("//"))      // skip comments
+                continue;
+            shaderCode += line;
+        }
+        scanner.close();
+
+        return shaderCode;
     }
 
     //
     // utility func for loading shader code from string buffer
     //
-    public static int loadShader(int type, String shaderCode)
+    private int CreateShader(int type, String shaderCode)
     {
         // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
         // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
@@ -80,16 +93,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         return shader;
     }
 
-    public float getAngle()
-    {
-        return mAngle;
-    }
-
-    public void setAngle(float angle)
-    {
-        mAngle = angle;
-    }
-
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config)
     {
@@ -97,17 +100,25 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         // Set the background frame color to RED
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        // Create the shapes I want to draw
+        // Create Shaders
+        String shaderCode;
+        shaderCode = LoadShaderCode("vertex_shader.txt");
+        VertexShaderID = CreateShader(GLES20.GL_VERTEX_SHADER, shaderCode);
+
+        shaderCode = LoadShaderCode("fragment_shader.txt");
+        FragmentShaderID = CreateShader(GLES20.GL_FRAGMENT_SHADER, shaderCode);
+
+        System.out.println("VertexShaderID=" + VertexShaderID + ", FragmentShaderID=" + FragmentShaderID);
 
         // initialize shapes
         mTriangle = new Triangle();
         mSquare = new Square();
         try
         {
-            mTorus = new Torus(mContext);
+            mObjModel = new ObjModel(mContext);
         } catch (IOException e)
         {
-            System.out.println("Torus ctor exception");
+            System.out.println("ObjModel ctor exception");
             e.printStackTrace();
         }
     }
@@ -124,13 +135,10 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
-
         float[] scratch = new float[16];
         float[] mRotationMatrix = new float[16];
 
         // Create a rotation transformation for the triangle
- //       long time = SystemClock.uptimeMillis() % 4000L;
- //       float angle = 0.090f * ((int) time);
         Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 1.0f, 0);
 
         // Combine the rotation matrix with the projection and camera view
@@ -140,7 +148,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
 
         //mTriangle.draw(scratch);
         //mSquare.draw(scratch);
-        mTorus.draw(scratch);
+        mObjModel.draw(scratch);
     }
 
     @Override

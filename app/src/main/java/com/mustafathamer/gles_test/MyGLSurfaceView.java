@@ -67,8 +67,8 @@ class MyGLSurfaceView extends GLSurfaceView
                     dy = dy * -1;
                 }
 
-                mRenderer.setAngle(
-                        mRenderer.getAngle() +
+                mRenderer.SetAngle(
+                        mRenderer.GetAngle() +
                                 ((dx + dy) * TOUCH_SCALE_FACTOR));
                 requestRender();
         }

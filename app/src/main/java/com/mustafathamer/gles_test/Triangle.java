@@ -63,17 +63,14 @@ public class Triangle
         // set the buffer to read the first coordinate
         vertexBuffer.position(0);
 
-        int vertexShader = MyGLRenderer.loadShader(GLES20.GL_VERTEX_SHADER, MyGLRenderer.vertexShaderCode);
-        int fragmentShader = MyGLRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER, MyGLRenderer.fragmentShaderCode);
-
         // create empty OpenGL ES Program
         mProgram = GLES20.glCreateProgram();
 
         // add the vertex shader to program
-        GLES20.glAttachShader(mProgram, vertexShader);
+        GLES20.glAttachShader(mProgram, MyGLRenderer.VertexShaderID);
 
         // add the fragment shader to program
-        GLES20.glAttachShader(mProgram, fragmentShader);
+        GLES20.glAttachShader(mProgram, MyGLRenderer.FragmentShaderID);
 
         // creates OpenGL ES program executables
         GLES20.glLinkProgram(mProgram);

@@ -1,17 +1,16 @@
 package com.mustafathamer.gles_test;
 
 import javax.microedition.khronos.egl.EGLConfig;
-//import android.opengl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
 import android.content.Context;
 import android.opengl.GLES20;
-//import android.opengl.GLES10;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 
 import java.io.IOException;
 import java.util.Scanner;
 
-import javax.microedition.khronos.opengles.GL10;
 
 /**
  * Created by moose-home on 10/25/2017.

@@ -15,8 +15,6 @@ import java.nio.ShortBuffer;
 
 public class Square
 {
-    private final int mProgram;
-
     private FloatBuffer vertexBuffer;
     private ShortBuffer drawListBuffer;
 
@@ -66,26 +64,15 @@ public class Square
         drawListBuffer.put(drawOrder);
         drawListBuffer.position(0);
 
-        // create empty OpenGL ES Program
-        mProgram = GLES20.glCreateProgram();
-
-        // add the vertex shader to program
-        GLES20.glAttachShader(mProgram, MyGLRenderer.VertexShaderID);
-
-        // add the fragment shader to program
-        GLES20.glAttachShader(mProgram, MyGLRenderer.FragmentShaderID);
-
-        // creates OpenGL ES program executables
-        GLES20.glLinkProgram(mProgram);
     }
 
     public void draw(float[] mvpMatrix)
     { // pass in the calculated transformation matrix
         // Add program to OpenGL ES environment
-        GLES20.glUseProgram(mProgram);
+//        GLES20.glUseProgram(mProgram);
 
         // get handle to vertex shader's vPosition member
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
+  //      mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
 
         // Enable a handle to the triangle vertices
         GLES20.glEnableVertexAttribArray(mPositionHandle);
@@ -96,16 +83,16 @@ public class Square
                 vertexStride, vertexBuffer);
 
         // get handle to fragment shader's vColor member
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
+//        mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 
         // Set color for drawing the triangle
         GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 
         // get handle to shape's transformation matrix
-        int mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
+//        int mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
 
         // Pass the projection and view transformation to the shader
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
+//        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
 
         // Draw the square using the draw list buffer
         GLES20.glDrawElements(

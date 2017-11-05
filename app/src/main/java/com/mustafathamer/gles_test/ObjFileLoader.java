@@ -31,20 +31,27 @@ public class ObjFileLoader
 
     private FloatBuffer mVerticesBuffer;
     private FloatBuffer mNormalsBuffer;
+    private FloatBuffer mUVsBuffer;
     private ShortBuffer mFacesBuffer;
     private ShortBuffer mFaceNormalsIndicesBuffer;
 
+    private final int bytesPerFloat = 4;
+    private final int bytesPerShort = 2;
+
     public final int COORDS_PER_VERTEX = 3;
+    public final int COORDS_PER_NORMAL = 3;
     public final int VertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
 
     public FloatBuffer GetVerticesBuffer() { return mVerticesBuffer; }
     public FloatBuffer GetNormalsBuffer() { return mNormalsBuffer; }
+    public FloatBuffer GetUVsBuffer() { return mUVsBuffer; }
     public ShortBuffer GetFacesBuffer()   { return mFacesBuffer;   }
     public ShortBuffer GetFaceNormalsIndicesBuffer()  { return mFaceNormalsIndicesBuffer;  }
 
     public int GetNumFaces() { return mFacesList.size(); }
     public int GetNumNormals() { return mNormalsList.size(); }
     public int GetNumVertices() { return mVerticesList.size(); }
+    public int GetNumUVs() { return mUVsList.size(); }
 
     public ObjFileLoader(Context context)
     {
@@ -56,6 +63,7 @@ public class ObjFileLoader
         mVerticesList = new ArrayList<>();
         mFacesList = new ArrayList<>();
         mNormalsList = new ArrayList<>();
+        mUVsList = new ArrayList<>();
 
         // Open the OBJ file with a Scanner
         Scanner scanner = new Scanner(mContext.getAssets().open(fileName + ".obj"));
@@ -96,22 +104,22 @@ public class ObjFileLoader
         System.out.println("Found uvs:" + mUVsList.size());
 
         // Create buffer for vertices
-        ByteBuffer buffer1 = ByteBuffer.allocateDirect(mVerticesList.size() * 3 * 4 /* sizeof float */);
+        ByteBuffer buffer1 = ByteBuffer.allocateDirect(mVerticesList.size() * 3 * bytesPerFloat);
         buffer1.order(ByteOrder.nativeOrder());
         mVerticesBuffer = buffer1.asFloatBuffer();
 
         // Create buffer for faces
-        ByteBuffer buffer2 = ByteBuffer.allocateDirect(mFacesList.size() * 3 * 2 /* sizeof short */);
+        ByteBuffer buffer2 = ByteBuffer.allocateDirect(mFacesList.size() * 3 * bytesPerShort);
         buffer2.order(ByteOrder.nativeOrder());
         mFacesBuffer = buffer2.asShortBuffer();
 
         // Create buffer for normals
-        ByteBuffer buffer3 = ByteBuffer.allocateDirect(mNormalsList.size() * 3 * 4 /* sizeof float */);
+        ByteBuffer buffer3 = ByteBuffer.allocateDirect(mNormalsList.size() * 3 * bytesPerFloat);
         buffer3.order(ByteOrder.nativeOrder());
         mNormalsBuffer = buffer3.asFloatBuffer();
 
         // Create buffer for faceNormalIndices
-        ByteBuffer buffer4 = ByteBuffer.allocateDirect(mFacesList.size() * 3 * 2 /* sizeof short */);
+        ByteBuffer buffer4 = ByteBuffer.allocateDirect(mFacesList.size() * 3 * bytesPerShort);
         buffer4.order(ByteOrder.nativeOrder());
         mFaceNormalsIndicesBuffer = buffer4.asShortBuffer();
 

@@ -21,4 +21,19 @@ public class OpenGLES20Activity extends MainActivity
         mGLView = new MyGLSurfaceView(this);
         setContentView(mGLView);
     }
+    @Override
+    protected void onResume()
+    {
+        // The activity must call the GL surface view's onResume() on activity onResume().
+        super.onResume();
+        mGLView.onResume();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        // The activity must call the GL surface view's onPause() on activity onPause().
+        super.onPause();
+        mGLView.onPause();
+    }
 }

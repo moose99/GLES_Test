@@ -36,7 +36,7 @@ class MyGLSurfaceView extends GLSurfaceView
         // To allow the object to rotate automatically, this line is commented out.
         // Unless you have objects changing without any user interaction, it’s usually a good idea
         // have this flag turned on
-        setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+//        setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 
     @Override

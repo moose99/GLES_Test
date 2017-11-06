@@ -89,7 +89,7 @@ public class ObjModel
 //        GLES20.glDrawElements(
 //                GLES20.GL_TRIANGLES, objFileLoader.GetNumFaces() * 3,
 //                GLES20.GL_UNSIGNED_SHORT, objFileLoader.GetFacesBuffer());
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, objFileLoader.GetNumVertices());
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, objFileLoader.GetNumVerts());
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(renderer.GetPositionHandle());

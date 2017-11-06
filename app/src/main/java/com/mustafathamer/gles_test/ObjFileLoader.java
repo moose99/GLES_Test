@@ -1,20 +1,20 @@
 package com.mustafathamer.gles_test;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 /**
  * Loads a wavefront OBJ file.
- *  Unlike OpenGL, the OpenGL ES API doesn’t allow rendering with quads (GL_QUADS), so you’ll have
- *  to export your model as a set of triangles.
+ * Unlike OpenGL, the OpenGL ES API doesn’t allow rendering with quads (GL_QUADS), so you’ll have
+ * to export your model as a set of triangles.
  * In the file, each line that starts with a "v" represents a single vertex. Similarly, each line
  * starting with an "f" represents a single triangular face. While each vertex line contains the
  * X, Y, and Z coordinates of a vertex, each face line contains the indices of three vertices, which
@@ -24,16 +24,11 @@ import java.util.Scanner;
 public class ObjFileLoader
 {
     private Context mContext;
-    private List<String> mVerticesList;
-    private List<String> mNormalsList;
-    private List<String> mFacesList;
-    private List<String> mUVsList;
 
     private FloatBuffer mVerticesBuffer;
     private FloatBuffer mNormalsBuffer;
     private FloatBuffer mUVsBuffer;
-    private ShortBuffer mFacesBuffer;
-    private ShortBuffer mFaceNormalsIndicesBuffer;
+    private int mNumVerts;
 
     private final int bytesPerFloat = 4;
     private final int bytesPerShort = 2;
@@ -42,16 +37,25 @@ public class ObjFileLoader
     public final int COORDS_PER_NORMAL = 3;
     public final int VertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
 
-    public FloatBuffer GetVerticesBuffer() { return mVerticesBuffer; }
-    public FloatBuffer GetNormalsBuffer() { return mNormalsBuffer; }
-    public FloatBuffer GetUVsBuffer() { return mUVsBuffer; }
-    public ShortBuffer GetFacesBuffer()   { return mFacesBuffer;   }
-    public ShortBuffer GetFaceNormalsIndicesBuffer()  { return mFaceNormalsIndicesBuffer;  }
+    public FloatBuffer GetVerticesBuffer()
+    {
+        return mVerticesBuffer;
+    }
 
-    public int GetNumFaces() { return mFacesList.size(); }
-    public int GetNumNormals() { return mNormalsList.size(); }
-    public int GetNumVertices() { return mVerticesList.size(); }
-    public int GetNumUVs() { return mUVsList.size(); }
+    public FloatBuffer GetNormalsBuffer()
+    {
+        return mNormalsBuffer;
+    }
+
+    public FloatBuffer GetUVsBuffer()
+    {
+        return mUVsBuffer;
+    }
+
+    public int GetNumVerts()
+    {
+        return mNumVerts;
+    }
 
     public ObjFileLoader(Context context)
     {
@@ -60,10 +64,10 @@ public class ObjFileLoader
 
     public void LoadObjFile(String fileName) throws IOException
     {
-        mVerticesList = new ArrayList<>();
-        mFacesList = new ArrayList<>();
-        mNormalsList = new ArrayList<>();
-        mUVsList = new ArrayList<>();
+        List<String> verticesList = new ArrayList<>();
+        List<String> normalsList = new ArrayList<>();
+        List<String> facesList = new ArrayList<>();
+        List<String> UVsList = new ArrayList<>();
 
         // Open the OBJ file with a Scanner
         Scanner scanner = new Scanner(mContext.getAssets().open(fileName + ".obj"));
@@ -76,112 +80,142 @@ public class ObjFileLoader
             if (line.startsWith("v "))
             {
                 // Add vertex line to list of vertices
-                mVerticesList.add(line);
-            }
-            else if (line.startsWith("f "))
+                verticesList.add(line);     // ex: v 0.2332653 -0.1349314 -0.7298675
+            } else if (line.startsWith("f "))
             {
                 // Add face line to faces list
-                mFacesList.add(line);
-            }
-            else if (line.startsWith("vn "))
+                facesList.add(line);    // ex: f 5164//7267 5037//7267 5035//7267 5163//7267
+            } else if (line.startsWith("vn "))
             {
                 // Add normals line to normals list
-                mNormalsList.add(line);
-            }
-            else if (line.startsWith("vt "))
+                normalsList.add(line);      // ex: vn 0.0543038 0.9978414 -0.03692874
+            } else if (line.startsWith("vt "))
             {
                 // Add uvs line to uvs list
-                mUVsList.add(line);
+                UVsList.add(line);
             }
         }
 
         // Close the scanner
         scanner.close();
 
-        System.out.println("Found vertices:" + mVerticesList.size());
-        System.out.println("Found faces:" + mFacesList.size());
-        System.out.println("Found normals:" + mNormalsList.size());
-        System.out.println("Found uvs:" + mUVsList.size());
+        System.out.println("Found vertices:" + verticesList.size());
+        System.out.println("Found faces:" + facesList.size());
+        System.out.println("Found normals:" + normalsList.size());
+        System.out.println("Found uvs:" + UVsList.size());
+
+        // loop through all faces and check how many verts we have
+        mNumVerts = 0;
+        for (String face : facesList)
+        {
+            String tmp[];
+            String vertexIndices[] = face.split(" ");   // create a list of verts, each looks like a//b//c
+            mNumVerts += vertexIndices.length;
+        }
+
+        Log.d("MOOSE", "NumVerts:" + mNumVerts);
+
 
         // Create buffer for vertices
-        ByteBuffer buffer1 = ByteBuffer.allocateDirect(mVerticesList.size() * 3 * bytesPerFloat);
+        ByteBuffer buffer1 = ByteBuffer.allocateDirect(mNumVerts * 3 * bytesPerFloat);
         buffer1.order(ByteOrder.nativeOrder());
         mVerticesBuffer = buffer1.asFloatBuffer();
-
-        // Create buffer for faces
-        ByteBuffer buffer2 = ByteBuffer.allocateDirect(mFacesList.size() * 3 * bytesPerShort);
-        buffer2.order(ByteOrder.nativeOrder());
-        mFacesBuffer = buffer2.asShortBuffer();
+        List<Float> origVerts = new ArrayList<>();
 
         // Create buffer for normals
-        ByteBuffer buffer3 = ByteBuffer.allocateDirect(mNormalsList.size() * 3 * bytesPerFloat);
+        ByteBuffer buffer2 = ByteBuffer.allocateDirect(mNumVerts * 3 * bytesPerFloat);
+        buffer2.order(ByteOrder.nativeOrder());
+        mNormalsBuffer = buffer2.asFloatBuffer();
+        List<Float> origNormals = new ArrayList<>();
+
+        // Create buffer for UVs
+        ByteBuffer buffer3 = ByteBuffer.allocateDirect(mNumVerts * 2 * bytesPerFloat);
         buffer3.order(ByteOrder.nativeOrder());
-        mNormalsBuffer = buffer3.asFloatBuffer();
+        mUVsBuffer = buffer3.asFloatBuffer();
+        List<Float> origUVs = new ArrayList<>();
 
-        // Create buffer for faceNormalIndices
-        ByteBuffer buffer4 = ByteBuffer.allocateDirect(mFacesList.size() * 3 * bytesPerShort);
-        buffer4.order(ByteOrder.nativeOrder());
-        mFaceNormalsIndicesBuffer = buffer4.asShortBuffer();
-
-        // Populating the Vertices buffer involves looping through the contents of mVerticesList,
-        // extracting the X, Y, and Z coordinates from each item, and calling the put() method to
-        // put data inside the buffer.
-        for (String vertex : mVerticesList)
+        // parse and save original verts
+        for (String vertex : verticesList)
         {
             String coords[] = vertex.split(" "); // Split by space
-            float x = Float.parseFloat(coords[1]);      // string to float
-            float y = Float.parseFloat(coords[2]);
-            float z = Float.parseFloat(coords[3]);
-            mVerticesBuffer.put(x);
-            mVerticesBuffer.put(y);
-            mVerticesBuffer.put(z);
+            for (int i = 1; i < 4; i++)
+            {
+                float f = Float.parseFloat(coords[i]);      // string to float
+                origVerts.add(f);
+            }
         }
-        mVerticesBuffer.position(0);     // reset the position of the buffer
 
-        // Populating the Normals buffer involves looping through the contents of mNormalsList,
-        // extracting the X, Y, and Z coordinates from each item, and calling the put() method to
-        // put data inside the buffer.
-        for (String normal : mNormalsList)
+        // parse and save original normals
+        for (String normal : normalsList)
         {
             String coords[] = normal.split(" "); // Split by space
-            float x = Float.parseFloat(coords[1]);      // string to float
-            float y = Float.parseFloat(coords[2]);
-            float z = Float.parseFloat(coords[3]);
-            mNormalsBuffer.put(x);
-            mNormalsBuffer.put(y);
-            mNormalsBuffer.put(z);
+            for (int i = 1; i < 4; i++)
+            {
+                float f = Float.parseFloat(coords[i]);      // string to float
+                origNormals.add(f);
+            }
         }
-        mNormalsBuffer.position(0);     // reset the position of the buffer
+
+        // parse and save original UVs
+        for (String uv : UVsList)
+        {
+            String coords[] = uv.split(" "); // Split by space
+            for (int i = 1; i < 3; i++)
+            {
+                float f = Float.parseFloat(coords[i]);      // string to float
+                origUVs.add(f);
+            }
+        }
+
+        Log.d("MOOSE", "OrigVerts:" + origVerts.size());
+        Log.d("MOOSE", "OrigNormals:" + origNormals.size());
+        Log.d("MOOSE", "OrigUVs:" + origUVs.size());
 
         //
         // populate faces buffer
         //
-        for (String face : mFacesList)
+        for (String face : facesList)
         {
             String tmp[];
-            String vertexIndices[] = face.split(" ");
+            String vertexIndices[] = face.split(" ");   // each one looks like: a or a//b or a//b//c
+            int idx;
+            for (int i = 1; i < vertexIndices.length; i++)
+            {
+                tmp = vertexIndices[i].split("//");
 
-            tmp = vertexIndices[1].split("//");
-            short vertex1 = Short.parseShort(tmp[0]);     // convert each index to a short
-            short normal1 = tmp.length > 1 ? Short.parseShort(tmp[1]) : -1;
+                // VERTS
+                idx = Short.parseShort(tmp[0]) - 1;     // convert each index to a short
+                mVerticesBuffer.put(origVerts.get(idx * 3));
+                mVerticesBuffer.put(origVerts.get(idx * 3 + 1));
+                mVerticesBuffer.put(origVerts.get(idx * 3 + 2));
 
-            tmp = vertexIndices[2].split("//");
-            short vertex2 = Short.parseShort(tmp[0]);
-            short normal2 = tmp.length > 1 ? Short.parseShort(tmp[1]) : -1;
+                if (tmp.length == 2)
+                {
+                    // NORMALS
+                    idx = Short.parseShort(tmp[1]) - 1;     // convert each index to a short
+                    mNormalsBuffer.put(origNormals.get(idx * 3));
+                    mNormalsBuffer.put(origNormals.get(idx * 3 + 1));
+                    mNormalsBuffer.put(origNormals.get(idx * 3 + 2));
+                }
 
-            tmp = vertexIndices[3].split("//");
-            short vertex3 = Short.parseShort(tmp[0]);
-            short normal3 = tmp.length > 1 ? Short.parseShort(tmp[1]) : -1;
+                if (tmp.length == 3)
+                {
+                    // UVs
+                    idx = Short.parseShort(tmp[1]) - 1;     // convert each index to a short
+                    mUVsBuffer.put(origUVs.get(idx * 2));
+                    mUVsBuffer.put(origUVs.get(idx * 2 + 1));
 
-            mFacesBuffer.put((short) (vertex1 - 1));                 // indices start from 1, not 0
-            mFacesBuffer.put((short) (vertex2 - 1));
-            mFacesBuffer.put((short) (vertex3 - 1));
-
-            mFaceNormalsIndicesBuffer.put((short) (normal1 - 1));
-            mFaceNormalsIndicesBuffer.put((short) (normal2 - 1));
-            mFaceNormalsIndicesBuffer.put((short) (normal3 - 1));
+                    // NORMALS
+                    idx = Short.parseShort(tmp[2]) - 1;     // convert each index to a short
+                    mNormalsBuffer.put(origNormals.get(idx * 3));
+                    mNormalsBuffer.put(origNormals.get(idx * 3 + 1));
+                    mNormalsBuffer.put(origNormals.get(idx * 3 + 2));
+                }
+            }
         }
-        mFacesBuffer.position(0);
-        mFaceNormalsIndicesBuffer.position(0);
+
+        mVerticesBuffer.position(0);
+        mNormalsBuffer.position(0);
+        mUVsBuffer.position(0);
     }
 }

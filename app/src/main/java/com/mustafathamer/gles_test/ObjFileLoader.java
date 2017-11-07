@@ -35,7 +35,6 @@ public class ObjFileLoader
 
     public final int COORDS_PER_VERTEX = 3;
     public final int COORDS_PER_NORMAL = 3;
-    public final int VertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
 
     public FloatBuffer GetVerticesBuffer()
     {
@@ -110,7 +109,7 @@ public class ObjFileLoader
         {
             String tmp[];
             String vertexIndices[] = face.split(" ");   // create a list of verts, each looks like a//b//c
-            mNumVerts += vertexIndices.length;
+            mNumVerts += vertexIndices.length - 1;      // ignore the 'f' at the start of each line
         }
 
         Log.d("MOOSE", "NumVerts:" + mNumVerts);
@@ -179,9 +178,11 @@ public class ObjFileLoader
             String tmp[];
             String vertexIndices[] = face.split(" ");   // each one looks like: a or a//b or a//b//c
             int idx;
-            for (int i = 1; i < vertexIndices.length; i++)
+            for (int i = 1; i < vertexIndices.length; i++)  // start at index of 1 to skip the 'f' at the start
             {
                 tmp = vertexIndices[i].split("//");
+                if (tmp.length == 1)    // if no split occurred
+                    tmp = vertexIndices[i].split("/");
 
                 // VERTS
                 idx = Short.parseShort(tmp[0]) - 1;     // convert each index to a short

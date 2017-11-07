@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/GLES_Test.iml" filepath="$PROJECT_DIR$/GLES_Test.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://C:\Users\Mus\AndroidStudioProjects\GLES_Test\app\app.iml" filepath="C:\Users\Mus\AndroidStudioProjects\GLES_Test\app\app.iml" />
     </modules>
   </component>
 </project>

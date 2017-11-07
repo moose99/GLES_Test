@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class ObjModel
 {
-    private ObjFileLoader objFileLoader;
+   private ObjFileLoader objFileLoader;
 
     // Set color with red, green, blue and alpha (opacity) values
     float color[] = {0.63671875f, 0.76953125f, 0.22265625f, 1.0f};
@@ -23,12 +23,12 @@ public class ObjModel
     //
     // CTOR
     //
-    public ObjModel(Context context)
+    public ObjModel(Context context, String fileName)
     {
         objFileLoader = new ObjFileLoader(context);
         try
         {
-            objFileLoader.LoadObjFile("bowser");
+            objFileLoader.LoadObjFile(fileName);
         } catch (IOException e)
         {
             System.out.println("Failed loading OBJ file");
@@ -44,7 +44,7 @@ public class ObjModel
         // Prepare the triangle coordinate data
         GLES20.glVertexAttribPointer(renderer.GetPositionHandle(), objFileLoader.COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
-                objFileLoader.VertexStride, objFileLoader.GetVerticesBuffer());
+                0, objFileLoader.GetVerticesBuffer());
         GLES20.glEnableVertexAttribArray(renderer.GetPositionHandle());
 
         //
@@ -57,7 +57,8 @@ public class ObjModel
         // NORMALS
         //
         // Pass in the normal information
-        GLES20.glVertexAttribPointer(renderer.GetNormalHandle(), objFileLoader.COORDS_PER_NORMAL, GLES20.GL_FLOAT, false,
+        GLES20.glVertexAttribPointer(renderer.GetNormalHandle(), objFileLoader.COORDS_PER_NORMAL,
+                GLES20.GL_FLOAT, false,
                 0, objFileLoader.GetNormalsBuffer());
 
         GLES20.glEnableVertexAttribArray(renderer.GetNormalHandle());
@@ -68,8 +69,10 @@ public class ObjModel
         float[] mvpMatrix = new float[16];
 
         Matrix.setIdentityM(mModelMatrix, 0);
+//        Matrix.scaleM(mModelMatrix, 0, 5.0f, 5.0f, 5.0f);
         Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, 0.0f);       // no translation for now
-        Matrix.rotateM(mModelMatrix, 0, renderer.GetAngle(), 0, 1.0f, 0);
+        Matrix.rotateM(mModelMatrix, 0, renderer.GetYAngle(), 0, 1.0f, 0);
+        Matrix.rotateM(mModelMatrix, 0, renderer.GetXAngle(), 1.0f, 0, 0);
 
         Matrix.multiplyMM(mvpMatrix, 0, renderer.GetViewMatrix(), 0, mModelMatrix, 0);  // so far just model and view
 

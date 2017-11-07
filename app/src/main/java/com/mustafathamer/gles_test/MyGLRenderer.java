@@ -57,6 +57,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
     private Triangle mTriangle;
     private Square mSquare;
     private ObjModel mObjModel;
+    private Cube mCube;
 
     //
     // for projection
@@ -90,11 +91,14 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
     //Instead of synchronized variable in Java, you can have java volatile variable, which will instruct
     // JVM threads to read value of volatile variable from main memory and don't cache it locally.
     //
-    private volatile float mAngle;
+    private volatile float mYAngle;
+    private volatile float mXAngle;
 
     public void SetContext(Context context)    { mContext = context; }
-    public float GetAngle()              { return mAngle; }
-    public void SetAngle(float angle)    { mAngle = angle; }
+    public float GetYAngle()              { return mYAngle; }
+    public float GetXAngle()              { return mXAngle; }
+    public void SetYAngle(float angle)    { mYAngle = angle; }
+    public void SetXAngle(float angle)    { mXAngle = angle; }
 
     //
     // CTOR
@@ -223,7 +227,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
 
         // Set the camera position (View matrix)
         Matrix.setLookAtM(mViewMatrix, 0,
-                0, 1, -8,
+                0, 4, -8,
                 0f, 0f, 0f,
                 0f, 1.0f, 0.0f);
 
@@ -259,7 +263,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         // initialize shapes
         mTriangle = new Triangle();
         mSquare = new Square();
-        mObjModel = new ObjModel(mContext);
+        mObjModel = new ObjModel(mContext, "bowser2");
+        mCube = new Cube();
     }
 
     @Override
@@ -271,7 +276,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
 
         // Do a complete rotation every 10 seconds.
         long time = SystemClock.uptimeMillis() % 10000L;
-        float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
+        float timeAngleInDegrees = (360.0f / 10000.0f) * ((int) time);
 
         // Set program handles for cube drawing.
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mObjectProgramHandle, "u_MVPMatrix");
@@ -283,9 +288,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
 
         // Calculate position of the light. Rotate and then push into the distance.
         Matrix.setIdentityM(mLightModelMatrix, 0);
-        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -5.0f);
-        Matrix.rotateM(mLightModelMatrix, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
-        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
+        Matrix.rotateM(mLightModelMatrix, 0, timeAngleInDegrees, 0.0f, 1.0f, 0.0f);
+        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -2.0f);
 
         Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
         Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
@@ -296,6 +300,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         //mTriangle.draw(this);
         //mSquare.draw(this);
         mObjModel.draw(this);
+        //mCube.Draw(this);
 
         // Draw a point to indicate the light.
         GLES20.glUseProgram(mPointProgramHandle);

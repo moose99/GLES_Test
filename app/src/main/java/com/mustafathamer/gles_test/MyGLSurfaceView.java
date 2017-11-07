@@ -55,6 +55,7 @@ class MyGLSurfaceView extends GLSurfaceView
                 float dx = x - mPreviousX;
                 float dy = y - mPreviousY;
 
+                /*
                 // reverse direction of rotation above the mid-line
                 if (y > getHeight() / 2)
                 {
@@ -66,10 +67,9 @@ class MyGLSurfaceView extends GLSurfaceView
                 {
                     dy = dy * -1;
                 }
-
-                mRenderer.SetAngle(
-                        mRenderer.GetAngle() +
-                                ((dx + dy) * TOUCH_SCALE_FACTOR));
+*/
+                mRenderer.SetYAngle(mRenderer.GetYAngle() + (dx * TOUCH_SCALE_FACTOR));
+                mRenderer.SetXAngle(mRenderer.GetXAngle() + (-dy * TOUCH_SCALE_FACTOR));
                 requestRender();
         }
 

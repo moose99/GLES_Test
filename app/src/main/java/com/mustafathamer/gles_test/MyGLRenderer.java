@@ -21,6 +21,7 @@ import java.util.Scanner;
 public class MyGLRenderer implements GLSurfaceView.Renderer
 {
     private Context mContext;
+    private String mObjFileName = "cube";
 
     // handles to programs
     private int mObjectProgramHandle;
@@ -263,7 +264,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         // initialize shapes
         mTriangle = new Triangle();
         mSquare = new Square();
-        mObjModel = new ObjModel(mContext, "bowser2");
+        mObjModel = new ObjModel(mContext, mObjFileName);
         mCube = new Cube();
     }
 
@@ -278,7 +279,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         long time = SystemClock.uptimeMillis() % 10000L;
         float timeAngleInDegrees = (360.0f / 10000.0f) * ((int) time);
 
-        // Set program handles for cube drawing.
+        // Set program shader var handles for drawing.
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mObjectProgramHandle, "u_MVPMatrix");
         mMVMatrixHandle = GLES20.glGetUniformLocation(mObjectProgramHandle, "u_MVMatrix");
         mLightPosHandle = GLES20.glGetUniformLocation(mObjectProgramHandle, "u_LightPos");

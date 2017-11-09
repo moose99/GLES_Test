@@ -23,6 +23,18 @@ import java.util.Scanner;
 
 public class ObjFileLoader
 {
+    // holds face info and current material name
+    private class FaceInfo
+    {
+        public String mVertIndices;
+        public String mMatName;
+        FaceInfo(String v, String matName)
+        {
+            mVertIndices = v;
+            mMatName = matName;
+        }
+    };
+
     private Context mContext;
 
     private FloatBuffer mVerticesBuffer;
@@ -65,17 +77,28 @@ public class ObjFileLoader
     {
         List<String> verticesList = new ArrayList<>();
         List<String> normalsList = new ArrayList<>();
-        List<String> facesList = new ArrayList<>();
+        List<FaceInfo> facesList = new ArrayList<>();
         List<String> UVsList = new ArrayList<>();
 
         // Open the OBJ file with a Scanner
         Scanner scanner = new Scanner(mContext.getAssets().open(fileName + ".obj"));
         System.out.println("scanning OBJ file");
 
+        String curMatName = "None";
+        int numMats=0;
         // Loop through all its lines
         while (scanner.hasNextLine())
         {
             String line = scanner.nextLine();
+            if (line.startsWith("usemtl "))
+            {
+                // set current material
+                String tmp[] = line.split(" ");
+                curMatName = tmp[1];
+                Log.d("MOOSE", "Set current material=" + curMatName);
+                numMats++;
+            }
+            else
             if (line.startsWith("v "))
             {
                 // Add vertex line to list of vertices
@@ -83,7 +106,7 @@ public class ObjFileLoader
             } else if (line.startsWith("f "))
             {
                 // Add face line to faces list
-                facesList.add(line);    // ex: f 5164//7267 5037//7267 5035//7267 5163//7267
+                facesList.add(new FaceInfo(line, curMatName));    // ex: f 5164//7267 5037//7267 5035//7267 5163//7267
             } else if (line.startsWith("vn "))
             {
                 // Add normals line to normals list
@@ -102,11 +125,13 @@ public class ObjFileLoader
         System.out.println("Found faces:" + facesList.size());
         System.out.println("Found normals:" + normalsList.size());
         System.out.println("Found uvs:" + UVsList.size());
+        System.out.println("Found mats:" + numMats);
 
         // loop through all faces and check how many verts we have
         mNumVerts = 0;
-        for (String face : facesList)
+        for (FaceInfo faceInfo : facesList)
         {
+            String face = faceInfo.mVertIndices;
             String tmp[];
             String vertexIndices[] = face.split(" ");   // create a list of verts, each looks like a//b//c
             mNumVerts += vertexIndices.length - 1;      // ignore the 'f' at the start of each line
@@ -173,8 +198,10 @@ public class ObjFileLoader
         //
         // populate faces buffer
         //
-        for (String face : facesList)
+        for (FaceInfo faceInfo: facesList)
         {
+            String face = faceInfo.mVertIndices;
+            String matName = faceInfo.mMatName;
             String tmp[];
             String vertexIndices[] = face.split(" ");   // each one looks like: a or a//b or a//b//c
             int idx;

@@ -234,7 +234,7 @@ public class Cube
         // Set color for drawing the triangle
 
         float color[] = {0.63671875f, 0.76953125f, 0.22265625f, 1.0f};
-        GLES20.glUniform4fv(renderer.GetColorHandle(), 1, color, 0);
+        GLES20.glUniform4fv(renderer.GetDifColorHandle(), 1, color, 0);
 
         //
         // NORMALS

@@ -40,7 +40,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
     private int mPositionHandle;
 
     /** This will be used to pass in model color information. */
-    private int mColorHandle;
+    private int mDifColorHandle;
+    private int mAmbColorHandle;
 
     /** This will be used to pass in model normal information. */
     private int mNormalHandle;
@@ -49,7 +50,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
     public int GetMVMatrixHandle() { return mMVMatrixHandle; }
     public int GetLightPosHandle() { return mLightPosHandle; }
     public int GetPositionHandle() { return mPositionHandle; }
-    public int GetColorHandle() { return mColorHandle; }
+    public int GetDifColorHandle() { return mDifColorHandle; }
+    public int GetAmbColorHandle() { return mAmbColorHandle; }
     public int GetNormalHandle() { return mNormalHandle; }
 
     //
@@ -244,7 +246,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         final int objectFragmentShaderHandle = CreateShader(GLES20.GL_FRAGMENT_SHADER, shaderCode);
 
         mObjectProgramHandle = CreateAndLinkProgram(objectVertexShaderHandle, objectFragmentShaderHandle,
-                new String[] {"a_Position",  "a_Color", "a_Normal"});       // attributes from object vertex shader
+                new String[] {"a_Position",  "a_AmbColor", "a_DifColor", "a_Normal"});       // attributes from object vertex shader
         Log.d("MOOSE", "Loaded object shaders");
 
         //
@@ -284,7 +286,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer
         mMVMatrixHandle = GLES20.glGetUniformLocation(mObjectProgramHandle, "u_MVMatrix");
         mLightPosHandle = GLES20.glGetUniformLocation(mObjectProgramHandle, "u_LightPos");
         mPositionHandle = GLES20.glGetAttribLocation(mObjectProgramHandle, "a_Position");
-        mColorHandle = GLES20.glGetAttribLocation(mObjectProgramHandle, "a_Color");
+        mDifColorHandle = GLES20.glGetAttribLocation(mObjectProgramHandle, "a_DifColor");
+        mAmbColorHandle = GLES20.glGetAttribLocation(mObjectProgramHandle, "a_AmbColor");
         mNormalHandle = GLES20.glGetAttribLocation(mObjectProgramHandle, "a_Normal");
 
         // Calculate position of the light. Rotate and then push into the distance.

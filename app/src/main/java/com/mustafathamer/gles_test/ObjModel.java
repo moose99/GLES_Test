@@ -47,12 +47,16 @@ public class ObjModel
         //
         // COLORS
         //
-        // Set color for drawing the triangle
-        //GLES20.glUniform4fv(renderer.GetColorHandle(), 1, color, 0);
-        GLES20.glVertexAttribPointer(renderer.GetColorHandle(), objFileLoader.COORDS_PER_VERTEX,
+        // Set ambient and diffuse color for drawing the triangle
+        GLES20.glVertexAttribPointer(renderer.GetDifColorHandle(), objFileLoader.COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
                 0, objFileLoader.GetKdsBuffer());
-        GLES20.glEnableVertexAttribArray(renderer.GetColorHandle());
+        GLES20.glEnableVertexAttribArray(renderer.GetDifColorHandle());
+
+        GLES20.glVertexAttribPointer(renderer.GetAmbColorHandle(), objFileLoader.COORDS_PER_VERTEX,
+                GLES20.GL_FLOAT, false,
+                0, objFileLoader.GetKasBuffer());
+        GLES20.glEnableVertexAttribArray(renderer.GetAmbColorHandle());
 
         //
         // NORMALS
@@ -100,6 +104,7 @@ public class ObjModel
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(renderer.GetPositionHandle());
         GLES20.glDisableVertexAttribArray(renderer.GetNormalHandle());
-        GLES20.glDisableVertexAttribArray(renderer.GetColorHandle());
+        GLES20.glDisableVertexAttribArray(renderer.GetDifColorHandle());
+        GLES20.glDisableVertexAttribArray(renderer.GetAmbColorHandle());
     }
 }

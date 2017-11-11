@@ -42,6 +42,7 @@ public class ObjFileLoader
     private FloatBuffer mNormalsBuffer;     // vert  normals
     private FloatBuffer mUVsBuffer;         // vert UVs
     private FloatBuffer mKdsBuffer;         // vert diffuse colors
+    private FloatBuffer mKasBuffer;         // vert ambient colors
     private int mNumVerts;
 
     private final int bytesPerFloat = 4;
@@ -75,6 +76,10 @@ public class ObjFileLoader
     public FloatBuffer GetKdsBuffer()
     {
         return mKdsBuffer;
+    }
+    public FloatBuffer GetKasBuffer()
+    {
+        return mKasBuffer;
     }
 
     public int GetNumVerts()
@@ -175,6 +180,7 @@ public class ObjFileLoader
 
         // Create buffer for colors
         mKdsBuffer = CreateFloatBuffer(mNumVerts, 3);
+        mKasBuffer = CreateFloatBuffer(mNumVerts, 3);
 
         // parse and save original verts
         for (String vertex : verticesList)
@@ -241,6 +247,10 @@ public class ObjFileLoader
                 mKdsBuffer.put(material.GetKd()[1]);
                 mKdsBuffer.put(material.GetKd()[2]);
 
+                mKasBuffer.put(material.GetKa()[0]);
+                mKasBuffer.put(material.GetKa()[1]);
+                mKasBuffer.put(material.GetKa()[2]);
+
                 if (tmp.length == 2)
                 {
                     // NORMALS
@@ -270,5 +280,6 @@ public class ObjFileLoader
         mNormalsBuffer.position(0);
         mUVsBuffer.position(0);
         mKdsBuffer.position(0);
+        mKasBuffer.position(0);
     }
 }

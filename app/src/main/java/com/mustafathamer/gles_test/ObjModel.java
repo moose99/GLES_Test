@@ -11,9 +11,6 @@ public class ObjModel
 {
    private ObjFileLoader objFileLoader;
 
-    // Set color with red, green, blue and alpha (opacity) values
-    float color[] = {0.63671875f, 0.76953125f, 0.22265625f, 1.0f};
-
     /**
      * Store the model matrix. This matrix is used to move models from object space (where each model can be thought
      * of being located at the center of the universe) to world space.
@@ -48,10 +45,14 @@ public class ObjModel
         GLES20.glEnableVertexAttribArray(renderer.GetPositionHandle());
 
         //
-        // COLORS - just one for now
+        // COLORS
         //
         // Set color for drawing the triangle
-        GLES20.glUniform4fv(renderer.GetColorHandle(), 1, color, 0);
+        //GLES20.glUniform4fv(renderer.GetColorHandle(), 1, color, 0);
+        GLES20.glVertexAttribPointer(renderer.GetColorHandle(), objFileLoader.COORDS_PER_VERTEX,
+                GLES20.GL_FLOAT, false,
+                0, objFileLoader.GetKdsBuffer());
+        GLES20.glEnableVertexAttribArray(renderer.GetColorHandle());
 
         //
         // NORMALS
@@ -69,7 +70,9 @@ public class ObjModel
         float[] mvpMatrix = new float[16];
 
         Matrix.setIdentityM(mModelMatrix, 0);
-//        Matrix.scaleM(mModelMatrix, 0, 5.0f, 5.0f, 5.0f);
+
+        Matrix.scaleM(mModelMatrix, 0, 2.0f, 2.0f, 2.0f);   // TEMP SCALE
+
         Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, 0.0f);       // no translation for now
         Matrix.rotateM(mModelMatrix, 0, renderer.GetYAngle(), 0, 1.0f, 0);
         Matrix.rotateM(mModelMatrix, 0, renderer.GetXAngle(), 1.0f, 0, 0);
@@ -97,5 +100,6 @@ public class ObjModel
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(renderer.GetPositionHandle());
         GLES20.glDisableVertexAttribArray(renderer.GetNormalHandle());
+        GLES20.glDisableVertexAttribArray(renderer.GetColorHandle());
     }
 }

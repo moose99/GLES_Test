@@ -37,9 +37,11 @@ public class ObjFileLoader
 
     private Context mContext;
 
-    private FloatBuffer mVerticesBuffer;
-    private FloatBuffer mNormalsBuffer;
-    private FloatBuffer mUVsBuffer;
+    private ObjMtlLoader mObjMtlLoader;
+    private FloatBuffer mVerticesBuffer;    // vert positions
+    private FloatBuffer mNormalsBuffer;     // vert  normals
+    private FloatBuffer mUVsBuffer;         // vert UVs
+    private FloatBuffer mKdsBuffer;         // vert diffuse colors
     private int mNumVerts;
 
     private final int bytesPerFloat = 4;
@@ -48,6 +50,14 @@ public class ObjFileLoader
     public final int COORDS_PER_VERTEX = 3;
     public final int COORDS_PER_NORMAL = 3;
 
+    private FloatBuffer CreateFloatBuffer(int size, int numFloats)
+    {
+        ByteBuffer buffer = ByteBuffer.allocateDirect(size * numFloats * bytesPerFloat);
+        buffer.order(ByteOrder.nativeOrder());
+        return buffer.asFloatBuffer();
+    }
+
+    public ObjMtlLoader GetObjMtlLoader() { return mObjMtlLoader; }
     public FloatBuffer GetVerticesBuffer()
     {
         return mVerticesBuffer;
@@ -62,15 +72,23 @@ public class ObjFileLoader
     {
         return mUVsBuffer;
     }
+    public FloatBuffer GetKdsBuffer()
+    {
+        return mKdsBuffer;
+    }
 
     public int GetNumVerts()
     {
         return mNumVerts;
     }
 
+    //
+    // CTOR
+    //
     public ObjFileLoader(Context context)
     {
         mContext = context;
+        mObjMtlLoader = new ObjMtlLoader(mContext);
     }
 
     public void LoadObjFile(String fileName) throws IOException
@@ -79,6 +97,9 @@ public class ObjFileLoader
         List<String> normalsList = new ArrayList<>();
         List<FaceInfo> facesList = new ArrayList<>();
         List<String> UVsList = new ArrayList<>();
+
+        // First parse the MTL file
+        mObjMtlLoader.LoadMtlFile(fileName);
 
         // Open the OBJ file with a Scanner
         Scanner scanner = new Scanner(mContext.getAssets().open(fileName + ".obj"));
@@ -141,22 +162,19 @@ public class ObjFileLoader
 
 
         // Create buffer for vertices
-        ByteBuffer buffer1 = ByteBuffer.allocateDirect(mNumVerts * 3 * bytesPerFloat);
-        buffer1.order(ByteOrder.nativeOrder());
-        mVerticesBuffer = buffer1.asFloatBuffer();
+        mVerticesBuffer = CreateFloatBuffer(mNumVerts, 3);
         List<Float> origVerts = new ArrayList<>();
 
         // Create buffer for normals
-        ByteBuffer buffer2 = ByteBuffer.allocateDirect(mNumVerts * 3 * bytesPerFloat);
-        buffer2.order(ByteOrder.nativeOrder());
-        mNormalsBuffer = buffer2.asFloatBuffer();
+        mNormalsBuffer = CreateFloatBuffer(mNumVerts, 3);
         List<Float> origNormals = new ArrayList<>();
 
         // Create buffer for UVs
-        ByteBuffer buffer3 = ByteBuffer.allocateDirect(mNumVerts * 2 * bytesPerFloat);
-        buffer3.order(ByteOrder.nativeOrder());
-        mUVsBuffer = buffer3.asFloatBuffer();
+        mUVsBuffer = CreateFloatBuffer(mNumVerts, 2);
         List<Float> origUVs = new ArrayList<>();
+
+        // Create buffer for colors
+        mKdsBuffer = CreateFloatBuffer(mNumVerts, 3);
 
         // parse and save original verts
         for (String vertex : verticesList)
@@ -201,7 +219,8 @@ public class ObjFileLoader
         for (FaceInfo faceInfo: facesList)
         {
             String face = faceInfo.mVertIndices;
-            String matName = faceInfo.mMatName;
+            ObjMaterial material = mObjMtlLoader.GetMtlMap().get(faceInfo.mMatName);
+            assert (material != null);
             String tmp[];
             String vertexIndices[] = face.split(" ");   // each one looks like: a or a//b or a//b//c
             int idx;
@@ -216,6 +235,11 @@ public class ObjFileLoader
                 mVerticesBuffer.put(origVerts.get(idx * 3));
                 mVerticesBuffer.put(origVerts.get(idx * 3 + 1));
                 mVerticesBuffer.put(origVerts.get(idx * 3 + 2));
+
+                // add the colors at each vertex from the face material
+                mKdsBuffer.put(material.GetKd()[0]);
+                mKdsBuffer.put(material.GetKd()[1]);
+                mKdsBuffer.put(material.GetKd()[2]);
 
                 if (tmp.length == 2)
                 {
@@ -245,5 +269,6 @@ public class ObjFileLoader
         mVerticesBuffer.position(0);
         mNormalsBuffer.position(0);
         mUVsBuffer.position(0);
+        mKdsBuffer.position(0);
     }
 }

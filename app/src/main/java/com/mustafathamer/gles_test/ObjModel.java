@@ -17,11 +17,6 @@ public class ObjModel
      */
     private float[] mModelMatrix = new float[16];
 
-    // defaults
-//    float difColor[] = {0.63671875f, 0.76953125f, 0.22265625f, 1.0f};
-    float difColor[] = {.5f, .1f, .1f, 1.0f};
-    float ambColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
-
     //
     // CTOR
     //
@@ -60,10 +55,6 @@ public class ObjModel
                     0, objFileLoader.GetKdsBuffer());
             GLES20.glEnableVertexAttribArray(renderer.GetDifColorHandle());
         }
-        else
-        {
-            GLES20.glUniform4fv(renderer.GetDifColorHandle(), 1, difColor, 0);
-        }
 
         if (objFileLoader.GetKasBuffer() != null)
         {
@@ -71,10 +62,6 @@ public class ObjModel
                     GLES20.GL_FLOAT, false,
                     0, objFileLoader.GetKasBuffer());
             GLES20.glEnableVertexAttribArray(renderer.GetAmbColorHandle());
-        }
-        else
-        {
-            GLES20.glUniform4fv(renderer.GetAmbColorHandle(), 1, ambColor, 0);
         }
 
         //
@@ -94,7 +81,8 @@ public class ObjModel
 
         Matrix.setIdentityM(mModelMatrix, 0);
 
-        Matrix.scaleM(mModelMatrix, 0, 2.0f, 2.0f, 2.0f);   // TEMP SCALE
+        float scale=.2f;
+ //       Matrix.scaleM(mModelMatrix, 0, scale, scale, scale);   // TEMP SCALE
 
         Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, 0.0f);       // no translation for now
         Matrix.rotateM(mModelMatrix, 0, renderer.GetYAngle(), 0, 1.0f, 0);
@@ -114,10 +102,7 @@ public class ObjModel
         // Pass the projection and view transformation to the shader
         GLES20.glUniformMatrix4fv(renderer.GetMVPMatrixHandle(), 1, false, mvpMatrix, 0);
 
-        // Draw the object using the draw list buffer
-//        GLES20.glDrawElements(
-//                GLES20.GL_TRIANGLES, objFileLoader.GetNumFaces() * 3,
-//                GLES20.GL_UNSIGNED_SHORT, objFileLoader.GetFacesBuffer());
+        // Draw the object
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, objFileLoader.GetNumVerts());
 
         // Disable vertex array

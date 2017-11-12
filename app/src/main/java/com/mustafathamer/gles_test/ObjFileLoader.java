@@ -28,12 +28,15 @@ public class ObjFileLoader
     {
         public String mVertIndices;
         public String mMatName;
+
         FaceInfo(String v, String matName)
         {
             mVertIndices = v;
             mMatName = matName;
         }
-    };
+    }
+
+    ;
 
     private Context mContext;
 
@@ -58,7 +61,11 @@ public class ObjFileLoader
         return buffer.asFloatBuffer();
     }
 
-    public ObjMtlLoader GetObjMtlLoader() { return mObjMtlLoader; }
+    public ObjMtlLoader GetObjMtlLoader()
+    {
+        return mObjMtlLoader;
+    }
+
     public FloatBuffer GetVerticesBuffer()
     {
         return mVerticesBuffer;
@@ -73,10 +80,12 @@ public class ObjFileLoader
     {
         return mUVsBuffer;
     }
+
     public FloatBuffer GetKdsBuffer()
     {
         return mKdsBuffer;
     }
+
     public FloatBuffer GetKasBuffer()
     {
         return mKasBuffer;
@@ -108,7 +117,7 @@ public class ObjFileLoader
         System.out.println("scanning OBJ file");
 
         String curMatName = "None";
-        int numMats=0;
+        int numMats = 0;
         // Loop through all its lines
         while (scanner.hasNextLine())
         {
@@ -120,23 +129,18 @@ public class ObjFileLoader
                 try
                 {
                     mObjMtlLoader.LoadMtlFile(tmp[1]);
-                }
-                catch (IOException e)
+                } catch (IOException e)
                 {
                     Log.i("MOOSE", "Failed loading: " + tmp[1]);
                 }
-            }
-            else
-            if (line.startsWith("usemtl "))
+            } else if (line.startsWith("usemtl "))
             {
                 // set current material
                 String tmp[] = line.split(" ");
                 curMatName = tmp[1];
                 Log.d("MOOSE", "Set current material=" + curMatName);
                 numMats++;
-            }
-            else
-            if (line.startsWith("v "))
+            } else if (line.startsWith("v "))
             {
                 // Add vertex line to list of vertices
                 verticesList.add(line);     // ex: v 0.2332653 -0.1349314 -0.7298675
@@ -194,8 +198,7 @@ public class ObjFileLoader
             // Create buffer for colors
             mKdsBuffer = CreateFloatBuffer(mNumVerts, 3);
             mKasBuffer = CreateFloatBuffer(mNumVerts, 3);
-        }
-        else
+        } else
         {
             mKdsBuffer = null;
             mKasBuffer = null;
@@ -241,16 +244,23 @@ public class ObjFileLoader
         //
         // populate faces buffer
         //
-        for (FaceInfo faceInfo: facesList)
+        for (FaceInfo faceInfo : facesList)
         {
             String face = faceInfo.mVertIndices;
-            ObjMaterial material = mObjMtlLoader.GetMtlMap()!=null ? mObjMtlLoader.GetMtlMap().get(faceInfo.mMatName) : null;
+            ObjMaterial material = mObjMtlLoader.GetMtlMap() != null ? mObjMtlLoader.GetMtlMap().get(faceInfo.mMatName) : null;
 
             String tmp[];
             String vertexIndices[] = face.split(" ");   // each one looks like: a or a//b or a//b//c
             int idx;
             for (int i = 1; i < vertexIndices.length; i++)  // start at index of 1 to skip the 'f' at the start
             {
+                /*
+                    Using v, vt, and vn to represent geometric vertices, texture vertices,
+                    and vertex normals, the statement would read:
+                        f v/vt/vn v/vt/vn v/vt/vn v/vt/vn
+                    If there are only vertices and vertex normals for a face element (no
+                    texture vertices), you would enter two slashes (//)
+                  */
                 tmp = vertexIndices[i].split("//");
                 if (tmp.length == 1)    // if no split occurred
                     tmp = vertexIndices[i].split("/");
@@ -304,6 +314,6 @@ public class ObjFileLoader
         if (mKdsBuffer != null)
             mKdsBuffer.position(0);
         if (mKasBuffer != null)
-                mKasBuffer.position(0);
+            mKasBuffer.position(0);
     }
 }

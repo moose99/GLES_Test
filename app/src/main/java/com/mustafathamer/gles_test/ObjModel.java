@@ -17,6 +17,11 @@ public class ObjModel
      */
     private float[] mModelMatrix = new float[16];
 
+    // defaults
+//    float difColor[] = {0.63671875f, 0.76953125f, 0.22265625f, 1.0f};
+    float difColor[] = {.5f, .1f, .1f, 1.0f};
+    float ambColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+
     //
     // CTOR
     //
@@ -47,16 +52,30 @@ public class ObjModel
         //
         // COLORS
         //
-        // Set ambient and diffuse color for drawing the triangle
-        GLES20.glVertexAttribPointer(renderer.GetDifColorHandle(), objFileLoader.COORDS_PER_VERTEX,
-                GLES20.GL_FLOAT, false,
-                0, objFileLoader.GetKdsBuffer());
-        GLES20.glEnableVertexAttribArray(renderer.GetDifColorHandle());
+        if (objFileLoader.GetKdsBuffer() != null)
+        {
+            // Set ambient and diffuse color for drawing the triangle
+            GLES20.glVertexAttribPointer(renderer.GetDifColorHandle(), objFileLoader.COORDS_PER_VERTEX,
+                    GLES20.GL_FLOAT, false,
+                    0, objFileLoader.GetKdsBuffer());
+            GLES20.glEnableVertexAttribArray(renderer.GetDifColorHandle());
+        }
+        else
+        {
+            GLES20.glUniform4fv(renderer.GetDifColorHandle(), 1, difColor, 0);
+        }
 
-        GLES20.glVertexAttribPointer(renderer.GetAmbColorHandle(), objFileLoader.COORDS_PER_VERTEX,
-                GLES20.GL_FLOAT, false,
-                0, objFileLoader.GetKasBuffer());
-        GLES20.glEnableVertexAttribArray(renderer.GetAmbColorHandle());
+        if (objFileLoader.GetKasBuffer() != null)
+        {
+            GLES20.glVertexAttribPointer(renderer.GetAmbColorHandle(), objFileLoader.COORDS_PER_VERTEX,
+                    GLES20.GL_FLOAT, false,
+                    0, objFileLoader.GetKasBuffer());
+            GLES20.glEnableVertexAttribArray(renderer.GetAmbColorHandle());
+        }
+        else
+        {
+            GLES20.glUniform4fv(renderer.GetAmbColorHandle(), 1, ambColor, 0);
+        }
 
         //
         // NORMALS
@@ -104,7 +123,9 @@ public class ObjModel
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(renderer.GetPositionHandle());
         GLES20.glDisableVertexAttribArray(renderer.GetNormalHandle());
-        GLES20.glDisableVertexAttribArray(renderer.GetDifColorHandle());
-        GLES20.glDisableVertexAttribArray(renderer.GetAmbColorHandle());
+        if (objFileLoader.GetKdsBuffer() != null)
+            GLES20.glDisableVertexAttribArray(renderer.GetDifColorHandle());
+        if (objFileLoader.GetKasBuffer() != null)
+            GLES20.glDisableVertexAttribArray(renderer.GetAmbColorHandle());
     }
 }

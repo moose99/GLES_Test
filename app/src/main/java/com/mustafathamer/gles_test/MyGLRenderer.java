@@ -21,7 +21,7 @@ import java.util.Scanner;
 public class MyGLRenderer implements GLSurfaceView.Renderer
 {
     private Context mContext;
-    private String mObjFileName = "bowser2";
+    private String mObjFileName = "wt_teapot";
 
     // handles to programs
     private int mObjectProgramHandle;

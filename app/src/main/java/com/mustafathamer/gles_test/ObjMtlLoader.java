@@ -68,7 +68,10 @@ public class ObjMtlLoader
     public void LoadMtlFile(String fileName) throws IOException
     {
         // Open the MTL file with a Scanner
-        Scanner scanner = new Scanner(mContext.getAssets().open(fileName + ".mtl"));
+        if (!fileName.endsWith(".mtl"))
+            fileName = fileName + ".mtl";
+
+        Scanner scanner = new Scanner(mContext.getAssets().open(fileName));
         Log.d("MOOSE", "scanning MTL file");
 
         mMtlMap = new HashMap<String, ObjMaterial>();

@@ -103,9 +103,6 @@ public class ObjFileLoader
         List<FaceInfo> facesList = new ArrayList<>();
         List<String> UVsList = new ArrayList<>();
 
-        // First parse the MTL file
-        mObjMtlLoader.LoadMtlFile(fileName);
-
         // Open the OBJ file with a Scanner
         Scanner scanner = new Scanner(mContext.getAssets().open(fileName + ".obj"));
         System.out.println("scanning OBJ file");
@@ -116,6 +113,20 @@ public class ObjFileLoader
         while (scanner.hasNextLine())
         {
             String line = scanner.nextLine();
+            if (line.startsWith("mtllib "))
+            {
+                String tmp[] = line.split(" ");
+                // First parse the MTL file
+                try
+                {
+                    mObjMtlLoader.LoadMtlFile(tmp[1]);
+                }
+                catch (IOException e)
+                {
+                    Log.i("MOOSE", "Failed loading: " + tmp[1]);
+                }
+            }
+            else
             if (line.startsWith("usemtl "))
             {
                 // set current material
@@ -178,9 +189,17 @@ public class ObjFileLoader
         mUVsBuffer = CreateFloatBuffer(mNumVerts, 2);
         List<Float> origUVs = new ArrayList<>();
 
-        // Create buffer for colors
-        mKdsBuffer = CreateFloatBuffer(mNumVerts, 3);
-        mKasBuffer = CreateFloatBuffer(mNumVerts, 3);
+        if (mObjMtlLoader.GetMtlMap() != null && !mObjMtlLoader.GetMtlMap().isEmpty())
+        {
+            // Create buffer for colors
+            mKdsBuffer = CreateFloatBuffer(mNumVerts, 3);
+            mKasBuffer = CreateFloatBuffer(mNumVerts, 3);
+        }
+        else
+        {
+            mKdsBuffer = null;
+            mKasBuffer = null;
+        }
 
         // parse and save original verts
         for (String vertex : verticesList)
@@ -225,8 +244,8 @@ public class ObjFileLoader
         for (FaceInfo faceInfo: facesList)
         {
             String face = faceInfo.mVertIndices;
-            ObjMaterial material = mObjMtlLoader.GetMtlMap().get(faceInfo.mMatName);
-            assert (material != null);
+            ObjMaterial material = mObjMtlLoader.GetMtlMap()!=null ? mObjMtlLoader.GetMtlMap().get(faceInfo.mMatName) : null;
+
             String tmp[];
             String vertexIndices[] = face.split(" ");   // each one looks like: a or a//b or a//b//c
             int idx;
@@ -242,14 +261,17 @@ public class ObjFileLoader
                 mVerticesBuffer.put(origVerts.get(idx * 3 + 1));
                 mVerticesBuffer.put(origVerts.get(idx * 3 + 2));
 
-                // add the colors at each vertex from the face material
-                mKdsBuffer.put(material.GetKd()[0]);
-                mKdsBuffer.put(material.GetKd()[1]);
-                mKdsBuffer.put(material.GetKd()[2]);
+                if (material != null)
+                {
+                    // add the colors at each vertex from the face material
+                    mKdsBuffer.put(material.GetKd()[0]);
+                    mKdsBuffer.put(material.GetKd()[1]);
+                    mKdsBuffer.put(material.GetKd()[2]);
 
-                mKasBuffer.put(material.GetKa()[0]);
-                mKasBuffer.put(material.GetKa()[1]);
-                mKasBuffer.put(material.GetKa()[2]);
+                    mKasBuffer.put(material.GetKa()[0]);
+                    mKasBuffer.put(material.GetKa()[1]);
+                    mKasBuffer.put(material.GetKa()[2]);
+                }
 
                 if (tmp.length == 2)
                 {
@@ -279,7 +301,9 @@ public class ObjFileLoader
         mVerticesBuffer.position(0);
         mNormalsBuffer.position(0);
         mUVsBuffer.position(0);
-        mKdsBuffer.position(0);
-        mKasBuffer.position(0);
+        if (mKdsBuffer != null)
+            mKdsBuffer.position(0);
+        if (mKasBuffer != null)
+                mKasBuffer.position(0);
     }
 }
